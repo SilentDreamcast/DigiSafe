@@ -1,0 +1,277 @@
+<!-- DigiKey Menu Testing Page created by Dawei Zhang and Marvin Mallari-->
+<!-- Original stopwatch code by Andrew Whitaker and Zip. https://stackoverflow.com/questions/26329900/how-do-i-display-millisecond-in-my-stopwatch -->
+
+<html>
+  <head>
+    <title>Tester Page</title>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+      // lists of a bunch of fake sites, usernames, passwords.
+      var pageNames = ["Apple"     ,"Orange"     ,"League of Legends","Blizzard"  ,"Jexxed"     ,"Crayola"   ,"Discord"   ,"Ebay"      ,"Facebook"  ,"Google"    ,"Hello!"    ,"IndieGoGo" ,"Knoppix"    ,"Microsoft"  ,"Niagra"];
+      var pageUsers = ["UserName1" ,"UserName15" ,"UserName12"       ,"UserName2" ,"UserName10" ,"UserName3" ,"UserName4" ,"UserName5" ,"UserName6" ,"UserName7" ,"UserName8" ,"UserName9" ,"UserName11" ,"UserName13" ,"UserName14"];
+      var pagePassw = ["password 1","password 15","password 12"      ,"password 2","password 10","password 3","password 4","password 5","password 6","password 7","password 8","password 9","password 11","password 13","password 14"];
+      
+      // keep score of what pages are requested
+      var rank      = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; // number of calls to a specific page
+      var rankW     = [0,0,0,0,0];                     // weighted pages count, not needed for calculation but nice to know.
+      var times     = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; // last access time in milliseconds
+      var total     = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; // total access time in milliseconds
+      var average   = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; // average access time in milliseconds (NOT TRUNCATED)
+      var index;                                       // the current index for the page requested
+      var counter = 0;
+      
+      
+      // resets username and password fields and focus to make testing easier
+      function resetFields(){
+        username.value= "";
+        password.value= "";
+        document.getElementById("username").focus();
+      }
+      
+      // ajax function to check username and password
+      $(document).ready(function(){
+        var start = window.performance.now();
+        $('#username').focus();
+        $('#submit').click(function(){
+          event.preventDefault();                                               // prevent PageReLoad
+          //$('.error').css('display', 'none');                                 // hide error msg
+          var ValidEmail = $('#username').val() === pageUsers[index];           // Email validate
+          var ValidPassword = $('#password').val() === pagePassw[index];        // Password validate
+          if (ValidEmail === true && ValidPassword === true) {                  // if ValidEmail & ValidPassword
+            $('.success').css('display', 'block');                              // show success msg
+            $('.error').css('display', 'none');                                 // show error msg
+            var end = window.performance.now();
+            var dur = end - start;
+            $('.duration').text("Login in "+dur+ " milliseconds")
+            $('.duration').css('display', 'block');
+            resetFields();
+            stop(); //stop stopwatch
+            next();
+          }
+          else {
+            $('.error').css('display', 'block'); // show error msg
+            $('.success').css('display', 'none'); // show error msg
+            resetFields();
+          }
+        });
+      });
+      
+      function getRandomInt(min, max){
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+      
+      //prints statistical table (WIP)
+      function printResults(){
+        var out = rank.toString();
+        out = out+'<br>'+rankW.toString();
+        document.getElementById("result").innerHTML = out;
+        // Create the rank and occurance table
+        $("#RankTable").html("");
+        var ranktable = document.getElementById("RankTable");
+        var table = document.createElement('TABLE');
+        table.border = '1';
+        var tableBody = document.createElement('TBODY');
+        table.appendChild(tableBody);
+
+        for (var i = 0; i < 8; i++) {
+          var tr = document.createElement('TR');
+          tableBody.appendChild(tr);
+
+          for (var j = 0; j < 15; j++) {
+            var td = document.createElement('TD');
+            td.width = '75';
+            switch (i){
+              case 0:
+                td.appendChild(document.createTextNode(pageNames[j]));	
+                break;
+              case 1:
+                td.appendChild(document.createTextNode(rank[j]));	
+                break;	
+              case 2:
+                if(j ==0){
+                  td.setAttribute("colspan", "15"); 
+                  td.appendChild(document.createTextNode("LAST ACCESS TIME"));	
+                }
+                break;
+              case 3:
+                //if( j < 5)
+                td.appendChild(document.createTextNode(times[j]));
+                break;
+              case 4:
+                if(j ==0){
+                  td.setAttribute("colspan", "15"); 
+                  td.appendChild(document.createTextNode("TOTAL ACCESS TIME"));	
+                }
+                break;
+              case 5:
+                //if( j < 5)
+                td.appendChild(document.createTextNode(total[j]));
+                break;
+              case 6:
+                if(j ==0){
+                  td.setAttribute("colspan", "15"); 
+                  td.appendChild(document.createTextNode("AVERAGE ACCESS TIME"));	
+                }
+                break;
+              case 7:
+                //if( j < 5)
+                td.appendChild(document.createTextNode(Math.floor(average[j] * 100) / 100));
+                break;
+              }
+              if( i == 2 || i == 4 || i==6){
+                if(j ==0)
+                  tr.appendChild(td);
+              }
+              else{ 
+                tr.appendChild(td);
+              }
+            }
+          }
+        ranktable.appendChild(table);
+      }
+      
+      // function for get time duration
+      function timeSpent() {
+        var start = window.performance.now();
+        // insert the method was using here
+        var end = window.performance.now();
+        var dur = end - start;
+      }
+	  
+      // like setup but we include a weighted element, like sites that are used often
+      function next(){
+        counter+=1;
+        if(counter == 100){
+          alert("100 signins complete!");
+        }
+        total[index] = total[index] + times[index];
+        if(average[index] == 0){
+          average[index] = total[index] / 1;
+        }
+        else {
+          average[index] = total[index] / rank[index];
+        }
+        printResults();
+        
+        if(Math.random() >= 0.5){ //boolean to decide if this round should be weighted
+          index = getRandomInt(0,4); //top 5 sites
+          rankW[index] = rankW[index]+1; //increment weighted array, purely for statistics
+        }
+        else{
+          index = getRandomInt(0,14);//all 15 sites associated with the device
+        }
+        document.getElementById("pageName").innerHTML = pageNames[index];
+        rank[index] = rank[index]+1;
+        
+        reset();// reset the stopwatch
+        start();// start the stopwatch
+      }
+      
+      // preloads a random fake site and populates the results
+      function setup(){
+        index = getRandomInt(0,14);
+        //rank[index] = rank[index]+1;
+        document.getElementById("pageName").innerHTML = pageNames[index];
+        printResults();
+      }
+      
+      var timeBegan = null
+          , timeStopped = null
+          , stoppedDuration = 0
+          , started = null;
+
+      function start() {
+          if (timeBegan === null) {
+              timeBegan = new Date();
+          }
+
+          if (timeStopped !== null) {
+              stoppedDuration += (new Date() - timeStopped);
+          }
+          console.log(stoppedDuration);
+
+          started = setInterval(clockRunning, 10);	
+      }
+
+      function stop() {
+          timeStopped = new Date();
+          clearInterval(started);
+      }
+       
+      function reset() {
+          clearInterval(started);
+          stoppedDuration = 0;
+          timeBegan = null;
+          timeStopped = null;
+          document.getElementById("display-area").innerHTML = "00:00:00.000";
+      }
+
+      function clockRunning(){
+          var currentTime = new Date()
+              , timeElapsed = new Date(currentTime - timeBegan - stoppedDuration)
+              , hour = timeElapsed.getUTCHours()
+              , min = timeElapsed.getUTCMinutes()
+              , sec = timeElapsed.getUTCSeconds()
+              , ms = timeElapsed.getUTCMilliseconds();
+          times[index] = sec*1000+ms;
+          //total[index] = total[index] + times[index];
+          //average[index] = total[index] / rank[index];
+          
+          document.getElementById("display-area").innerHTML = 
+              (hour > 9 ? hour : "0" + hour) + ":" + 
+              (min > 9 ? min : "0" + min) + ":" + 
+              (sec > 9 ? sec : "0" + sec) + "." + 
+              (ms > 99 ? ms : ms > 9 ? "0" + ms : "00" + ms);
+      };
+      
+      
+    </script>
+    
+    <style>
+    
+      body{
+        background-color: #383838;
+        font-family: "Trebuchet MS", Helvetica, sans-serif;
+        color: #E8E8E8;
+      }
+      
+      #display-area {
+        font-size: 20pt;
+      }
+      
+    </style>
+  </head>
+  
+  <body onload="setup()">
+    <h1 id="pageName">PLACEHOLDER TITLE</h1>
+    <form class="loginbox" autocomplete="off">
+      <fieldset>
+        <strong style="display: none;" class="error">Username or Password is incorrect. Please Try Again.</strong>
+        <strong style="display: none;" class="success">WELCOME BACK!</strong>
+        <label for="username">Username</label>
+        <input type="text" id="username" value="" />
+        <label for="username">Password</label>
+        <input type="password" id="password" value="" />
+        <input type="submit" id="submit" value="LOG IN" />
+        <strong style="display: none;" class="duration">Time</strong>
+      </fieldset>
+    </form>
+
+    <p>note: After successful or failed authentication, the username and password fields will automatically clear and focus returned to username.<br>This test is for using the device, not testing your mouse and keyboard skills.</p>
+
+    <h1>Request Results</h1>
+    <div id="result"></div>
+    <div id="RankTable"></div>
+    
+    <button onclick="next()">TEST: Skip Login</button>
+    <div>
+      <output id="display-area">00:00:00.000</output>
+      <br>
+      <button id="toggle-button" onClick="start()">TEST: Start</button>
+      <button id="toggle-button" onClick="stop()">TEST: Stop</button>
+      <button id="reset-button" onClick="reset()">TEST: Reset</button>
+    </div>
+
+  </body>
+</html>
