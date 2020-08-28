@@ -1,5 +1,9 @@
 # DigiSafe
 
+## This project is currently being rebooted!!
+New design based off the ESP8266 for 2FA and SHA256 EEPROM encryption. WiFi only used for updating RTC with NTP. Direct WiFi access to ESP is for DigiSafe settings. Keys can not be pulled off via WiFi access only inputted. Encryption is done on-device set with a 9 pattern, 3 button (3bit) combination set via the settings page. P(n,r) = P(9,7) = 9!/(9-7)! = 181440 permutations.
+
+## Old Description Below this
 DigiSafe is an offline username and password storage device that currently runs on Arduino based hardware using ATMEGA32u4 microcontrollers. There will be some extra security hardware sauce in the future.
 
 This project was started as a quick 2 week sprint exercise for senior design at California State University Northridge, Computer Science. Although the project was discontinued after the exercise, it was picked up again for a Human Computer Interaction class. As the class name suggests, the current progress was to gauge a metric that made the device more human friendly. We will continue working on the device even after the class has completed.
